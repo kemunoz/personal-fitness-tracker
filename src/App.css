@@ -1,0 +1,161 @@
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+  text-align: left;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  color: var(--text);
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.workout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 32px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.field label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.field input {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.workout-form button[type='submit'] {
+  font: inherit;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.workout-form button[type='submit']:hover {
+  opacity: 0.9;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text);
+}
+
+.workout-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workout-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.workout-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.workout-exercise {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.workout-detail {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.workout-date {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.delete-btn {
+  font-size: 20px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
