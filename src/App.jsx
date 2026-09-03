@@ -1,172 +1,129 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import PasteImport from './components/PasteImport.jsx'
+import History from './components/History.jsx'
+import Stats from './components/Stats.jsx'
+import { loadWorkouts, saveWorkouts, loadUnit, saveUnit, normalize } from './lib/storage.js'
+import { downloadCSV } from './lib/csv.js'
+import { entryKey } from './lib/format.js'
 
-const STORAGE_KEY = 'fitness-tracker-workouts'
-
-function loadWorkouts() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-function emptyForm() {
-  return {
-    exercise: '',
-    sets: '',
-    reps: '',
-    weight: '',
-    date: new Date().toISOString().slice(0, 10),
-  }
-}
-
-function App() {
+export default function App() {
   const [workouts, setWorkouts] = useState(loadWorkouts)
-  const [form, setForm] = useState(emptyForm)
+  const [unit, setUnit] = useState(loadUnit)
+  const [tab, setTab] = useState('log')
+  const [status, setStatus] = useState('')
+
+  useEffect(() => saveUnit(unit), [unit])
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts))
-  }, [workouts])
+    if (!status) return undefined
+    const timer = setTimeout(() => setStatus(''), 4000)
+    return () => clearTimeout(timer)
+  }, [status])
 
-  function handleChange(e) {
-    const { name, value } = e.target
-    setForm((f) => ({ ...f, [name]: value }))
+  const existingKeys = useMemo(() => new Set(workouts.map(entryKey)), [workouts])
+
+  // Every change writes through to localStorage right away, so a lost tab
+  // never costs more than the edit in progress.
+  function commit(next, message) {
+    setWorkouts(next)
+    if (saveWorkouts(next)) setStatus(message || '')
+    else setStatus("Couldn't save to this browser's storage — export a CSV to be safe.")
   }
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (!form.exercise.trim()) return
-
-    const entry = {
-      id: crypto.randomUUID(),
-      exercise: form.exercise.trim(),
-      sets: Number(form.sets) || 0,
-      reps: Number(form.reps) || 0,
-      weight: Number(form.weight) || 0,
-      date: form.date,
-    }
-    setWorkouts((w) => [entry, ...w])
-    setForm(emptyForm())
+  function handleImport(entries) {
+    const added = entries.map(normalize)
+    const next = [...workouts, ...added].sort((a, b) => b.date.localeCompare(a.date))
+    commit(next, `Imported ${added.length} ${added.length === 1 ? 'entry' : 'entries'}.`)
+    setTab('history')
   }
 
-  function handleDelete(id) {
-    setWorkouts((w) => w.filter((entry) => entry.id !== id))
+  function handleExport() {
+    const ordered = [...workouts].sort((a, b) => a.date.localeCompare(b.date))
+    downloadCSV(ordered)
   }
 
-  const totalVolume = workouts.reduce(
-    (sum, w) => sum + w.sets * w.reps * w.weight,
-    0,
-  )
+  function handleClearAll() {
+    const ok = window.confirm(
+      `Delete all ${workouts.length} entries? This can't be undone — export a CSV first if you want a copy.`,
+    )
+    if (ok) commit([], 'All entries deleted.')
+  }
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Fitness Tracker</h1>
-        <p className="subtitle">Log your workouts and track progress</p>
+        <div>
+          <h1>Fitness Tracker</h1>
+          <p className="subtitle">
+            Paste your notes, keep the data on this device, export it whenever.
+          </p>
+        </div>
+        <div className="header-actions">
+          <label className="unit-toggle">
+            <span className="field-label">Default unit</span>
+            <select value={unit} onChange={(e) => setUnit(e.target.value)}>
+              <option value="lb">lb</option>
+              <option value="kg">kg</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            className="primary"
+            onClick={handleExport}
+            disabled={workouts.length === 0}
+          >
+            Export CSV
+          </button>
+        </div>
       </header>
 
-      <section className="stats">
-        <div className="stat-card">
-          <span className="stat-value">{workouts.length}</span>
-          <span className="stat-label">Logged sets</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-value">{totalVolume.toLocaleString()}</span>
-          <span className="stat-label">Total volume (lb)</span>
-        </div>
-      </section>
+      <Stats workouts={workouts} />
 
-      <form className="workout-form" onSubmit={handleSubmit}>
-        <div className="field">
-          <label htmlFor="exercise">Exercise</label>
-          <input
-            id="exercise"
-            name="exercise"
-            type="text"
-            placeholder="e.g. Bench Press"
-            value={form.exercise}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="field-row">
-          <div className="field">
-            <label htmlFor="sets">Sets</label>
-            <input
-              id="sets"
-              name="sets"
-              type="number"
-              min="0"
-              value={form.sets}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="reps">Reps</label>
-            <input
-              id="reps"
-              name="reps"
-              type="number"
-              min="0"
-              value={form.reps}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="weight">Weight (lb)</label>
-            <input
-              id="weight"
-              name="weight"
-              type="number"
-              min="0"
-              value={form.weight}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="date">Date</label>
-            <input
-              id="date"
-              name="date"
-              type="date"
-              value={form.date}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-        <button type="submit">Add workout</button>
-      </form>
+      <nav className="tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'log'}
+          className={tab === 'log' ? 'tab active' : 'tab'}
+          onClick={() => setTab('log')}
+        >
+          Log a workout
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'history'}
+          className={tab === 'history' ? 'tab active' : 'tab'}
+          onClick={() => setTab('history')}
+        >
+          History{workouts.length > 0 && ` (${workouts.length})`}
+        </button>
+      </nav>
 
-      <section className="workout-list">
-        {workouts.length === 0 ? (
-          <p className="empty">No workouts logged yet. Add your first one above.</p>
-        ) : (
-          <ul>
-            {workouts.map((w) => (
-              <li key={w.id} className="workout-item">
-                <div className="workout-info">
-                  <span className="workout-exercise">{w.exercise}</span>
-                  <span className="workout-detail">
-                    {w.sets} sets × {w.reps} reps @ {w.weight} lb
-                  </span>
-                  <span className="workout-date">{w.date}</span>
-                </div>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(w.id)}
-                  aria-label={`Delete ${w.exercise}`}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
+      {status && <p className="status" role="status">{status}</p>}
+
+      {tab === 'log' ? (
+        <PasteImport unit={unit} existingKeys={existingKeys} onImport={handleImport} />
+      ) : (
+        <History
+          workouts={workouts}
+          onDeleteEntry={(id) => commit(workouts.filter((e) => e.id !== id))}
+          onDeleteDay={(date) => commit(workouts.filter((e) => e.date !== date))}
+        />
+      )}
+
+      <footer className="app-footer">
+        <p>
+          Everything you log is stored only in this browser. Clearing site data — or
+          using another device — starts from empty, so export a CSV to keep a copy.
+        </p>
+        {workouts.length > 0 && (
+          <button type="button" className="ghost danger" onClick={handleClearAll}>
+            Delete all data
+          </button>
         )}
-      </section>
+      </footer>
     </div>
   )
 }
-
-export default App
