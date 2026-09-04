@@ -5,4 +5,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   base: '/personal-fitness-tracker/',
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3001',
+    },
+  },
 })
