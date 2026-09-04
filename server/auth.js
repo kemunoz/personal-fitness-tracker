@@ -8,7 +8,7 @@ const SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production'
 const SALT_ROUNDS = 10
 
 function signToken(user) {
-  return jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '30d' })
+  return jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '7d' })
 }
 
 export function authenticate(req, res, next) {
