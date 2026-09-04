@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import PasteImport from './components/PasteImport.jsx'
 import History from './components/History.jsx'
 import Stats from './components/Stats.jsx'
 import ProgressCharts from './components/ProgressCharts.jsx'
 import { loadWorkouts, saveWorkouts, loadUnit, saveUnit, normalize } from './lib/storage.js'
-import { downloadCSV } from './lib/csv.js'
+import { downloadCSV, parseCSV } from './lib/csv.js'
 import { entryKey } from './lib/format.js'
 
 export default function App() {
@@ -13,6 +13,7 @@ export default function App() {
   const [unit, setUnit] = useState(loadUnit)
   const [tab, setTab] = useState('log')
   const [status, setStatus] = useState('')
+  const fileInputRef = useRef(null)
 
   useEffect(() => saveUnit(unit), [unit])
 
@@ -44,6 +45,29 @@ export default function App() {
     downloadCSV(ordered)
   }
 
+  function handleImportCSV(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const entries = parseCSV(reader.result)
+      if (entries.length === 0) {
+        setStatus('No entries found in that CSV.')
+        return
+      }
+      const newEntries = entries.filter((entry) => !existingKeys.has(entryKey(entry)))
+      if (newEntries.length === 0) {
+        setStatus(`All ${entries.length} entries are already in your log.`)
+        return
+      }
+      const next = [...workouts, ...newEntries].sort((a, b) => b.date.localeCompare(a.date))
+      commit(next, `Imported ${newEntries.length} of ${entries.length} entries from CSV.`)
+    }
+    reader.readAsText(file)
+    // Reset so re-selecting the same file triggers onChange again
+    e.target.value = ''
+  }
+
   function handleClearAll() {
     const ok = window.confirm(
       `Delete all ${workouts.length} entries? This can't be undone — export a CSV first if you want a copy.`,
@@ -68,6 +92,20 @@ export default function App() {
               <option value="kg">kg</option>
             </select>
           </label>
+          <input
+            type="file"
+            accept=".csv"
+            ref={fileInputRef}
+            onChange={handleImportCSV}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Import CSV
+          </button>
           <button
             type="button"
             className="primary"
