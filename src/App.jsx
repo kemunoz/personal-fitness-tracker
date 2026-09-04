@@ -3,6 +3,7 @@ import './App.css'
 import PasteImport from './components/PasteImport.jsx'
 import History from './components/History.jsx'
 import Stats from './components/Stats.jsx'
+import ProgressCharts from './components/ProgressCharts.jsx'
 import { loadWorkouts, saveWorkouts, loadUnit, saveUnit, normalize } from './lib/storage.js'
 import { downloadCSV } from './lib/csv.js'
 import { entryKey } from './lib/format.js'
@@ -99,19 +100,30 @@ export default function App() {
         >
           History{workouts.length > 0 && ` (${workouts.length})`}
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'stats'}
+          className={tab === 'stats' ? 'tab active' : 'tab'}
+          onClick={() => setTab('stats')}
+        >
+          Statistics
+        </button>
       </nav>
 
       {status && <p className="status" role="status">{status}</p>}
 
-      {tab === 'log' ? (
+      {tab === 'log' && (
         <PasteImport unit={unit} existingKeys={existingKeys} onImport={handleImport} />
-      ) : (
+      )}
+      {tab === 'history' && (
         <History
           workouts={workouts}
           onDeleteEntry={(id) => commit(workouts.filter((e) => e.id !== id))}
           onDeleteDay={(date) => commit(workouts.filter((e) => e.date !== date))}
         />
       )}
+      {tab === 'stats' && <ProgressCharts workouts={workouts} />}
 
       <footer className="app-footer">
         <p>

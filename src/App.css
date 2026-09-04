@@ -463,6 +463,26 @@ button.ghost.danger:hover {
   color: var(--accent);
 }
 
+/* Progress charts */
+
+.progress-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.chart-wrapper {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 12px 8px;
+}
+
 /* Footer */
 
 .app-footer {
