@@ -483,6 +483,34 @@ button.ghost.danger:hover {
   padding: 16px 12px 8px;
 }
 
+/* Recommendations */
+
+.recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rec-increase {
+  font-size: 13px;
+  font-weight: 600;
+  color: #22c55e;
+  white-space: nowrap;
+}
+
+.rec-stay {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.rec-skip {
+  font-size: 13px;
+  color: var(--text);
+  font-style: italic;
+  white-space: nowrap;
+}
+
 /* Footer */
 
 .app-footer {

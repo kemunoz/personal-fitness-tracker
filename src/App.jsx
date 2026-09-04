@@ -4,6 +4,7 @@ import PasteImport from './components/PasteImport.jsx'
 import History from './components/History.jsx'
 import Stats from './components/Stats.jsx'
 import ProgressCharts from './components/ProgressCharts.jsx'
+import Recommendations from './components/Recommendations.jsx'
 import { loadWorkouts, saveWorkouts, loadUnit, saveUnit, normalize } from './lib/storage.js'
 import { downloadCSV, parseCSV } from './lib/csv.js'
 import { entryKey } from './lib/format.js'
@@ -147,6 +148,15 @@ export default function App() {
         >
           Statistics
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'recs'}
+          className={tab === 'recs' ? 'tab active' : 'tab'}
+          onClick={() => setTab('recs')}
+        >
+          Recommendations
+        </button>
       </nav>
 
       {status && <p className="status" role="status">{status}</p>}
@@ -162,6 +172,7 @@ export default function App() {
         />
       )}
       {tab === 'stats' && <ProgressCharts workouts={workouts} />}
+      {tab === 'recs' && <Recommendations workouts={workouts} unit={unit} />}
 
       <footer className="app-footer">
         <p>
