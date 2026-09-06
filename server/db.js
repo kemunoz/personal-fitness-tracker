@@ -3,7 +3,9 @@ import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const db = new Database(join(__dirname, 'data.db'))
+// DB_PATH points at the Fly volume in production; falls back to a file beside
+// this module for local development.
+const db = new Database(process.env.DB_PATH || join(__dirname, 'data.db'))
 
 // Enable WAL mode for better concurrent read performance
 db.pragma('journal_mode = WAL')
