@@ -1,6 +1,9 @@
-// All data lives in this browser. Nothing is sent anywhere.
+// Workouts logged before accounts existed, still sitting in this browser.
+// The app reads from the API now; these keys exist so that data can be
+// carried into an account instead of being stranded.
 const STORAGE_KEY = 'fitness-tracker-workouts'
 const UNIT_KEY = 'fitness-tracker-unit'
+const MIGRATED_KEY = 'fitness-tracker-migrated'
 
 function normalize(entry) {
   return {
@@ -31,15 +34,7 @@ export function loadWorkouts() {
   }
 }
 
-export function saveWorkouts(workouts) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts))
-    return true
-  } catch {
-    return false
-  }
-}
-
+/** The default unit chosen before accounts existed. */
 export function loadUnit() {
   try {
     return localStorage.getItem(UNIT_KEY) === 'kg' ? 'kg' : 'lb'
@@ -48,11 +43,24 @@ export function loadUnit() {
   }
 }
 
-export function saveUnit(unit) {
+/** Whether these entries have already been carried into an account. */
+export function hasMigrated() {
   try {
-    localStorage.setItem(UNIT_KEY, unit)
+    return localStorage.getItem(MIGRATED_KEY) === 'true'
   } catch {
-    /* storage unavailable; the app still works for this session */
+    return false
+  }
+}
+
+/**
+ * Record that the entries reached an account. The entries themselves are
+ * deliberately left in place, so a failed import is still recoverable.
+ */
+export function markMigrated() {
+  try {
+    localStorage.setItem(MIGRATED_KEY, 'true')
+  } catch {
+    /* storage unavailable; the prompt reappears next visit, which is harmless */
   }
 }
 

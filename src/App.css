@@ -511,6 +511,66 @@ button.ghost.danger:hover {
   white-space: nowrap;
 }
 
+/* Login */
+
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 20px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.login-card h1 {
+  margin: 0 0 4px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 28px;
+  text-align: left;
+}
+
+.login-form button.primary {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.login-error {
+  font-size: 14px;
+  color: #e2564d;
+  text-align: center;
+}
+
+.login-switch {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link-btn:hover {
+  opacity: 0.8;
+}
+
 /* Footer */
 
 .app-footer {
@@ -538,4 +598,56 @@ button.ghost.danger:hover {
   .app-header {
     align-items: flex-start;
   }
+}
+
+/* Pre-account data */
+
+.migrate-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  border-radius: 6px;
+}
+
+.migrate-copy {
+  flex: 1 1 320px;
+}
+
+.migrate-copy h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.migrate-copy p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+  max-width: 52ch;
+}
+
+.migrate-error {
+  margin-top: 8px !important;
+  color: #e2564d;
+}
+
+.migrate-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-local {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
 }
