@@ -7,6 +7,8 @@ export default function Login({ onAuth }) {
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   // Workouts logged before accounts existed. Reachable without signing in, so
@@ -21,6 +23,10 @@ export default function Login({ onAuth }) {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    if (mode === 'signup' && password !== confirm) {
+      setError('Passwords do not match')
+      return
+    }
     setLoading(true)
     try {
       if (mode === 'signup') {
@@ -35,6 +41,8 @@ export default function Login({ onAuth }) {
       setLoading(false)
     }
   }
+
+  const revealLabel = showPassword ? 'Hide' : 'Show'
 
   return (
     <div className="login-page">
@@ -57,17 +65,54 @@ export default function Login({ onAuth }) {
           </label>
           <label className="field">
             <span className="field-label">Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-            />
+            <div className="password-input">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={mode === 'signup' ? 6 : undefined}
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+              />
+              <button
+                type="button"
+                className="link-btn reveal-btn"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {revealLabel}
+              </button>
+            </div>
           </label>
+          {mode === 'signup' && (
+            <label className="field">
+              <span className="field-label">Confirm password</span>
+              <div className="password-input">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="link-btn reveal-btn"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {revealLabel}
+                </button>
+              </div>
+            </label>
+          )}
 
-          {error && <p className="login-error">{error}</p>}
+          {error && (
+            <p className="login-error" role="alert">
+              {error}
+            </p>
+          )}
 
           <button type="submit" className="primary" disabled={loading}>
             {loading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
@@ -82,6 +127,8 @@ export default function Login({ onAuth }) {
             onClick={() => {
               setMode(mode === 'login' ? 'signup' : 'login')
               setError('')
+              setConfirm('')
+              setShowPassword(false)
             }}
           >
             {mode === 'login' ? 'Create one' : 'Sign in'}
