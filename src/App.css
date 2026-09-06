@@ -544,6 +544,25 @@ button.ghost.danger:hover {
   margin-top: 4px;
 }
 
+.password-input {
+  position: relative;
+  display: flex;
+}
+
+.password-input input {
+  flex: 1;
+  padding-right: 60px; /* clears the Show/Hide button */
+}
+
+.reveal-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  text-decoration: none;
+}
+
 .login-error {
   font-size: 14px;
   color: #e2564d;
