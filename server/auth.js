@@ -4,7 +4,10 @@ import jwt from 'jsonwebtoken'
 import db from './db.js'
 
 const router = Router()
-const SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production'
+const SECRET = process.env.JWT_SECRET
+if (!SECRET) {
+  throw new Error('JWT_SECRET is required. Use `npm run dev` for a local throwaway key.')
+}
 const SALT_ROUNDS = 10
 
 function signToken(user) {

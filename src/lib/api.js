@@ -1,5 +1,10 @@
 const TOKEN_KEY = 'fitness-tracker-token'
 
+// Empty in dev, where vite.config.js proxies /api to localhost:3001. In the
+// GitHub Pages build this is the API host's absolute origin, injected from the
+// VITE_API_URL repository variable.
+const API_BASE = import.meta.env.VITE_API_URL ?? ''
+
 function getToken() {
   return localStorage.getItem(TOKEN_KEY)
 }
@@ -14,7 +19,7 @@ export function logout() {
 
 async function request(path, options = {}) {
   const token = getToken()
-  const res = await fetch(path, {
+  const res = await fetch(API_BASE + path, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

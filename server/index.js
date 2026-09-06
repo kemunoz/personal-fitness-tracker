@@ -6,7 +6,10 @@ import workoutsRouter from './workouts.js'
 const app = express()
 const PORT = process.env.PORT || 3001
 
-app.use(cors())
+// Scheme + host only -- a path suffix here would match no request.
+app.use(cors({
+  origin: ['https://kemunoz.github.io', 'http://localhost:5173'],
+}))
 app.use(express.json({ limit: '2mb' }))
 
 app.use('/api/auth', authRouter)
