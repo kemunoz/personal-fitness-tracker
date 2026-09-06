@@ -17,6 +17,11 @@ export function logout() {
   localStorage.removeItem(TOKEN_KEY)
 }
 
+// Sign-in and sign-up answer bad credentials with a 401. That is not a dead
+// session, and the login form shows the server's message inline — reloading
+// there would swallow it.
+const AUTH_PATHS = ['/api/auth/login', '/api/auth/signup']
+
 async function request(path, options = {}) {
   const token = getToken()
   const res = await fetch(API_BASE + path, {
@@ -27,7 +32,7 @@ async function request(path, options = {}) {
       ...options.headers,
     },
   })
-  if (res.status === 401) {
+  if (res.status === 401 && !AUTH_PATHS.includes(path)) {
     logout()
     window.location.reload()
     throw new Error('Session expired')
