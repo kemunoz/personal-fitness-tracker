@@ -599,3 +599,55 @@ button.ghost.danger:hover {
     align-items: flex-start;
   }
 }
+
+/* Pre-account data */
+
+.migrate-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  border-radius: 6px;
+}
+
+.migrate-copy {
+  flex: 1 1 320px;
+}
+
+.migrate-copy h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: var(--text-h);
+}
+
+.migrate-copy p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+  max-width: 52ch;
+}
+
+.migrate-error {
+  margin-top: 8px !important;
+  color: #e2564d;
+}
+
+.migrate-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-local {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}

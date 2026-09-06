@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { login, signup } from '../lib/api.js'
+import { loadWorkouts } from '../lib/storage.js'
+import { downloadCSV } from '../lib/csv.js'
 
 export default function Login({ onAuth }) {
   const [mode, setMode] = useState('login')
@@ -7,6 +9,14 @@ export default function Login({ onAuth }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  // Workouts logged before accounts existed. Reachable without signing in, so
+  // nobody's data is stuck behind an account they never had.
+  const [local] = useState(loadWorkouts)
+
+  function handleExportLocal() {
+    const ordered = [...local].sort((a, b) => a.date.localeCompare(b.date))
+    downloadCSV(ordered, `workouts-from-this-browser-${new Date().toISOString().slice(0, 10)}.csv`)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -77,6 +87,18 @@ export default function Login({ onAuth }) {
             {mode === 'login' ? 'Create one' : 'Sign in'}
           </button>
         </p>
+
+        {local.length > 0 && (
+          <p className="login-local">
+            {local.length} {local.length === 1 ? 'workout' : 'workouts'} saved in this browser,
+            from before accounts existed. Sign in and you can add {local.length === 1 ? 'it' : 'them'} to
+            your account, or{' '}
+            <button type="button" className="link-btn" onClick={handleExportLocal}>
+              download a CSV
+            </button>{' '}
+            first.
+          </p>
+        )}
       </div>
     </div>
   )

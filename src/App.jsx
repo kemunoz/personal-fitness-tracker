@@ -6,7 +6,8 @@ import Stats from './components/Stats.jsx'
 import ProgressCharts from './components/ProgressCharts.jsx'
 import Recommendations from './components/Recommendations.jsx'
 import Login from './components/Login.jsx'
-import { normalize } from './lib/storage.js'
+import MigrateBanner from './components/MigrateBanner.jsx'
+import { normalize, loadWorkouts, loadUnit, hasMigrated, markMigrated } from './lib/storage.js'
 import { downloadCSV, parseCSV } from './lib/csv.js'
 import { entryKey } from './lib/format.js'
 import {
@@ -29,6 +30,9 @@ export default function App() {
   const [tab, setTab] = useState('log')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
+  // Pre-account workouts still in this browser, read once on mount.
+  const [legacy, setLegacy] = useState(() => (hasMigrated() ? [] : loadWorkouts()))
+  const [legacyDismissed, setLegacyDismissed] = useState(false)
   const fileInputRef = useRef(null)
 
   const loadData = useCallback(async () => {
@@ -77,6 +81,34 @@ export default function App() {
     } catch {
       setStatus('Failed to save entries.')
     }
+  }
+
+  async function handleMigrateLegacy() {
+    // Entries keep their original ids, so the server ignores any it already has.
+    await saveWorkouts(legacy)
+    markMigrated()
+
+    // The old default unit comes across too, so kg users don't land on lb.
+    const legacyUnit = loadUnit()
+    let unitMoved = false
+    if (legacyUnit !== unit) {
+      try {
+        await updateUnit(legacyUnit)
+        unitMoved = true
+      } catch {
+        /* the workouts landed, and the unit is one tap away in the header */
+      }
+    }
+
+    setLegacy([])
+    await loadData()
+    const noun = legacy.length === 1 ? 'workout' : 'workouts'
+    setStatus(
+      unitMoved
+        ? `Added ${legacy.length} ${noun} and set your default unit to ${legacyUnit}.`
+        : `Added ${legacy.length} ${noun} from this browser.`,
+    )
+    setTab('history')
   }
 
   function handleExport() {
@@ -206,6 +238,14 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {legacy.length > 0 && !legacyDismissed && (
+        <MigrateBanner
+          count={legacy.length}
+          onMigrate={handleMigrateLegacy}
+          onDismiss={() => setLegacyDismissed(true)}
+        />
+      )}
 
       <Stats workouts={workouts} />
 
