@@ -53,6 +53,7 @@ export default function ProgressCharts({ workouts }) {
   const chartData = view === 'volume' ? volumeData : exerciseData
   const dataKey = view === 'volume' ? 'volume' : 'weight'
   const label = view === 'volume' ? 'Volume' : 'Weight'
+  const minPoints = view === 'volume' ? 2 : 1
 
   if (workouts.length === 0) {
     return <p className="empty">Log some workouts to see progress charts.</p>
@@ -86,11 +87,11 @@ export default function ProgressCharts({ workouts }) {
         )}
       </div>
 
-      {chartData.length < 2 ? (
+      {chartData.length < minPoints ? (
         <p className="empty">
           {view === 'volume'
             ? 'Need at least 2 sessions to chart volume.'
-            : 'Need at least 2 sessions with this exercise to chart progress.'}
+            : 'Log this exercise to see progress.'}
         </p>
       ) : (
         <div className="chart-wrapper">
@@ -101,8 +102,17 @@ export default function ProgressCharts({ workouts }) {
                 dataKey="date"
                 tick={{ fontSize: 12, fill: 'var(--text)' }}
                 tickFormatter={(d) => d.slice(5)} // MM-DD
+                padding={{ left: 20, right: 20 }}
               />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--text)' }} width={52} />
+              <YAxis
+                tick={{ fontSize: 12, fill: 'var(--text)' }}
+                width={52}
+                domain={
+                  chartData.length === 1
+                    ? [(dataMin) => Math.max(0, Math.round(dataMin * 0.9)), (dataMax) => Math.round(dataMax * 1.1)]
+                    : ['auto', 'auto']
+                }
+              />
               <Tooltip
                 contentStyle={{
                   background: 'var(--bg)',
