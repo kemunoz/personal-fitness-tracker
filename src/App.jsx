@@ -291,7 +291,12 @@ export default function App() {
       {status && <p className="status" role="status">{status}</p>}
 
       {tab === 'log' && (
-        <PasteImport unit={unit} existingKeys={existingKeys} onImport={handleImport} />
+        <PasteImport
+          unit={unit}
+          workouts={workouts}
+          existingKeys={existingKeys}
+          onImport={handleImport}
+        />
       )}
       {tab === 'history' && (
         <History
