@@ -1,0 +1,351 @@
+openapi: 3.0.3
+info:
+  title: Fitness Tracker API
+  version: "1.0.0"
+  description: |
+    JSON API behind the [Personal Fitness Tracker](https://kemunoz.github.io/personal-fitness-tracker/).
+    Stateless JWT auth — sign up or log in to get a token, then send it as
+    `Authorization: Bearer <token>` on every `/workouts` request.
+
+    Source: [`server/`](https://github.com/kemunoz/personal-fitness-tracker/tree/main/server).
+servers:
+  - url: https://server-dappled-comet-3917.fly.dev/api
+    description: Production (Fly.io)
+  - url: http://localhost:3001/api
+    description: Local dev
+
+tags:
+  - name: auth
+  - name: workouts
+
+paths:
+  /auth/signup:
+    post:
+      tags: [auth]
+      summary: Create an account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Missing email/password, or password under 6 characters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: An account with that email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Sign in
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Missing email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Get the signed-in user
+      responses:
+        '200':
+          description: The current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated, or token invalid/expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User no longer exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags: [auth]
+      summary: Update the unit preference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                unit:
+                  type: string
+                  enum: [lb, kg]
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated, or token invalid/expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /workouts:
+    get:
+      tags: [workouts]
+      summary: List all workouts for the signed-in user
+      description: Ordered by `date` descending.
+      responses:
+        '200':
+          description: Workout entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entry'
+        '401':
+          description: Not authenticated, or token invalid/expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags: [workouts]
+      summary: Add workouts
+      description: >
+        Inserts each entry, skipping any whose `id` already exists for this
+        user (`INSERT OR IGNORE`) — safe to retry or resend.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/EntryInput'
+      responses:
+        '201':
+          description: Entries processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  added:
+                    type: integer
+                    description: Number of entries actually inserted (excludes duplicates)
+        '400':
+          description: Body was missing or not a non-empty array
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated, or token invalid/expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [workouts]
+      summary: Delete by day, or delete everything
+      description: Exactly one of `date` or `all` must be given.
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Delete every entry logged on this date
+        - name: all
+          in: query
+          schema:
+            type: string
+            enum: ['true']
+          description: Delete every entry for this user
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: integer
+        '400':
+          description: Neither `date` nor `all` was given
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated, or token invalid/expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /workouts/{id}:
+    delete:
+      tags: [workouts]
+      summary: Delete one workout
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Deleted (or was already gone — this endpoint is idempotent)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+        '401':
+          description: Not authenticated, or token invalid/expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+          description: Only enforced on signup
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT, valid for 7 days
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        unit:
+          type: string
+          enum: [lb, kg]
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    Entry:
+      allOf:
+        - $ref: '#/components/schemas/EntryInput'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+    EntryInput:
+      type: object
+      description: >
+        Normalized workout row — see `lib/storage.js` (client) and
+        `server/workouts.js` (server), which enforce the same shape.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Client-generated; used for dedup on POST
+        date:
+          type: string
+          format: date
+        session:
+          type: string
+          example: Push day
+        exercise:
+          type: string
+          example: Bench press
+        sets:
+          type: integer
+        reps:
+          type: integer
+        weight:
+          type: number
+        unit:
+          type: string
+          enum: [lb, kg]
+        bodyweight:
+          type: boolean
+        durationMin:
+          type: number
+        distance:
+          type: number
+        distanceUnit:
+          type: string
+        notes:
+          type: string
+        raw:
+          type: string
+          description: The original pasted line this entry was parsed from
+
+security:
+  - bearerAuth: []
