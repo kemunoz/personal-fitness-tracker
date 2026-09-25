@@ -241,6 +241,49 @@ button.ghost.danger:hover {
   flex-wrap: wrap;
 }
 
+/* Repeat a previous workout */
+
+.copy-previous {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.copy-previous-header h2 {
+  margin: 0 0 2px;
+}
+
+.copy-previous-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.copy-previous-controls select {
+  max-width: 100%;
+}
+
+.copy-previous-preview {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+button.linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: inherit;
+  text-decoration: underline;
+}
+
 .preview {
   border: 1px solid var(--border);
   border-radius: 8px;
