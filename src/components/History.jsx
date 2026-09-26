@@ -4,6 +4,7 @@ import { describeEntry, formatDate } from '../lib/format.js'
 
 export default function History({ workouts, onDeleteEntry, onDeleteDay }) {
   const [filter, setFilter] = useState('')
+  const [dayToDelete, setDayToDelete] = useState(null)
 
   const days = useMemo(() => {
     const needle = filter.trim().toLowerCase()
@@ -64,7 +65,7 @@ export default function History({ workouts, onDeleteEntry, onDeleteDay }) {
             <button
               type="button"
               className="ghost"
-              onClick={() => onDeleteDay(day.date)}
+              onClick={() => setDayToDelete(day)}
               aria-label={`Delete all entries for ${formatDate(day.date)}`}
             >
               Delete day
@@ -92,6 +93,45 @@ export default function History({ workouts, onDeleteEntry, onDeleteDay }) {
           </ul>
         </section>
       ))}
+
+      {dayToDelete && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onClick={() => setDayToDelete(null)}
+        >
+          <div
+            className="modal"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-day-title"
+            aria-describedby="delete-day-desc"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="delete-day-title">Delete day?</h2>
+            <p id="delete-day-desc">
+              Delete all {dayToDelete.entries.length}{' '}
+              {dayToDelete.entries.length === 1 ? 'entry' : 'entries'} for{' '}
+              {formatDate(dayToDelete.date)}? This can&apos;t be undone.
+            </p>
+            <div className="modal-actions">
+              <button type="button" className="ghost" onClick={() => setDayToDelete(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="ghost danger"
+                onClick={() => {
+                  onDeleteDay(dayToDelete.date)
+                  setDayToDelete(null)
+                }}
+              >
+                Delete day
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
